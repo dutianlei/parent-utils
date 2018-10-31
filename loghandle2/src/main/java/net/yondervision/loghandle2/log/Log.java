@@ -232,56 +232,103 @@ public class Log {
         boolean contains = Arrays.asList(prints).contains(methodName.toUpperCase());
         return contains;
     }
+    /**
+        * 根据传入参数，封装日志打印消息
+        * @param params 传入的参数
+        * @return 打印logger日志
+        */
+       private static String getMessage(String msgCode,String[] params) {
+           //获得堆栈信息
+           StackTraceElement[] stackTraceElement = Thread.currentThread().getStackTrace();
+           //获得调用此方法的方法名称
+           String methodName2 = stackTraceElement[2].getMethodName();
+           String methodName3 = stackTraceElement[3].getMethodName();
+           String className3 = stackTraceElement[3].getClassName();
+           String fileName3 = stackTraceElement[3].getFileName();
+           int lineNumber3 = stackTraceElement[3].getLineNumber();
+           String logFileName = getLogFileName(methodName2);
+           //拼装文件名称
+           MDC.put("fileName", logFileName);
 
+           String message = properUtilsCode.getString(msgCode);
+           String [] messageArg = message.split(",");
+           StringBuilder sbMsg = new StringBuilder();
+//           message="";
+           for(int j=0;j<params.length;j++){
+               if(j==params.length-1){
+//                   message=sbMsg+messageArg[j];
+                   sbMsg.append(messageArg[j]);
+               }else{
+//                   message=sbMsg+messageArg[j]+",";
+                   sbMsg.append(messageArg[j]).append(",");
+               }
+           }
+           System.out.println("sbMsg:" + sbMsg.toString());
+           int i =1;
+           message = sbMsg.toString();
+           for(String str : params){
+               String placeHolder=STARTCHAR+i+ENDCHAR;
+               message = StringUtils.replaceOnce(message, placeHolder, str);
+               i++;
+           }
+     		String callPath = className3 + "." + methodName3 + "(" + fileName3 + ":" + lineNumber3 + ")";
+     		// 获取当前线程名称
+     		String threadName = Thread.currentThread().getName();
+     		// 获取系统时间
+     		String systime = new SimpleDateFormat("yyyy-MM-dd-HH.mm.ss.SSS").format(System.currentTimeMillis());
+     		// 组成打印信息
+     		message = "["+threadName+"]- "+systime + "- " + callPath + " -[" + methodName2 + "]" +"-" + message + "。";
+     		return message;
+     	}
     /**
      * 根据传入参数，封装日志打印消息
      * @param params 传入的参数
      * @return 打印logger日志
      */
-    private static String getMessage(String msgCode,String[] params) {
-        //获得堆栈信息
-        StackTraceElement[] stackTraceElement = Thread.currentThread().getStackTrace();
-        //获得调用此方法的方法名称
-        String methodName2 = stackTraceElement[2].getMethodName();
-        String methodName3 = stackTraceElement[3].getMethodName();
-        String className3 = stackTraceElement[3].getClassName();
-        String fileName3 = stackTraceElement[3].getFileName();
-        int lineNumber3 = stackTraceElement[3].getLineNumber();
-        String logFileName = getLogFileName(methodName2);
-        //拼装文件名称
-        MDC.put("fileName", logFileName);
-        int i =1;
-        String message = properUtilsCode.getString(msgCode);
-        for(String str : params){
-            String placeHolder=STARTCHAR+i+ENDCHAR;
-            message = StringUtils.replaceOnce(message, placeHolder, str);
-            i++;
-        }
-//        if (params.length >=1 && params.length < message.split(",").length) {
-//            int i1 = StringUtils.ordinalIndexOf(message, ",", params.length);
-//            message = message.substring(0,i1);
-//        }
-//        if(params.length <=0) {
-//            message = "";
-//        }
-
-//        int i = 0;
-//        StringBuffer sb = new StringBuffer();
+//    private static String getMessage(String msgCode,String[] params) {
+//        //获得堆栈信息
+//        StackTraceElement[] stackTraceElement = Thread.currentThread().getStackTrace();
+//        //获得调用此方法的方法名称
+//        String methodName2 = stackTraceElement[2].getMethodName();
+//        String methodName3 = stackTraceElement[3].getMethodName();
+//        String className3 = stackTraceElement[3].getClassName();
+//        String fileName3 = stackTraceElement[3].getFileName();
+//        int lineNumber3 = stackTraceElement[3].getLineNumber();
+//        String logFileName = getLogFileName(methodName2);
+//        //拼装文件名称
+//        MDC.put("fileName", logFileName);
+//        int i =1;
+//        String message = properUtilsCode.getString(msgCode);
 //        for(String str : params){
-//            sb = i == params.length - 1 ? sb.append(str + "。") : sb.append(str + ",");
+//            String placeHolder=STARTCHAR+i+ENDCHAR;
+//            message = StringUtils.replaceOnce(message, placeHolder, str);
 //            i++;
 //        }
-        //需要打印的日志信息
-//        String message =  sb.toString();
-  		String callPath = className3 + "." + methodName3 + "(" + fileName3 + ":" + lineNumber3 + ")";
-  		// 获取当前线程名称
-  		String threadName = Thread.currentThread().getName();
-  		// 获取系统时间
-  		String systime = new SimpleDateFormat("yyyy-MM-dd-HH.mm.ss.SSS").format(System.currentTimeMillis());
-  		// 组成打印信息
-  		message = "["+threadName+"]- "+systime + "- " + callPath + " -[" + methodName2 + "]" +"-" + message + "。";
-  		return message;
-  	}
+////        if (params.length >=1 && params.length < message.split(",").length) {
+////            int i1 = StringUtils.ordinalIndexOf(message, ",", params.length);
+////            message = message.substring(0,i1);
+////        }
+////        if(params.length <=0) {
+////            message = "";
+////        }
+//
+////        int i = 0;
+////        StringBuffer sb = new StringBuffer();
+////        for(String str : params){
+////            sb = i == params.length - 1 ? sb.append(str + "。") : sb.append(str + ",");
+////            i++;
+////        }
+//        //需要打印的日志信息
+////        String message =  sb.toString();
+//  		String callPath = className3 + "." + methodName3 + "(" + fileName3 + ":" + lineNumber3 + ")";
+//  		// 获取当前线程名称
+//  		String threadName = Thread.currentThread().getName();
+//  		// 获取系统时间
+//  		String systime = new SimpleDateFormat("yyyy-MM-dd-HH.mm.ss.SSS").format(System.currentTimeMillis());
+//  		// 组成打印信息
+//  		message = "["+threadName+"]- "+systime + "- " + callPath + " -[" + methodName2 + "]" +"-" + message + "。";
+//  		return message;
+//  	}
 
 	public static void loadConfig(String fileName) {
 		/*LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
